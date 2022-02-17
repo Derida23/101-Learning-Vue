@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task 2 - Method Function</title>
+  </head>
+  <body>
+    <div id="app">
+      <button onclick="vm.openForm()">Open From</button>
+      <h1>{{ 'Point A : ' + a }}</h1>
+      <h1>{{ 'Average : ' + average }}</h1>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script type="text/javascript">
+      var vm = new Vue({
+        el: "#app",
+        data: {
+          a: 0,
+          average: 0,
+        },
+        methods: {
+          openForm: function (number) {
+            var count = 0;
+            while (this.a < 10) {
+              this.a = this.a + parseInt(prompt("Input Point A :"));
+              count++;
+            }
+
+            this.average = this.a / count;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
