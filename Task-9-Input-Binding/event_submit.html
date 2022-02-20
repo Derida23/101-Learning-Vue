@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Submit</title>
+</head>
+<body>
+  <div id="app">
+    <form v-on:submit.prevent="submitForm($event)">
+        <p v-if="errors.length">
+            <b>Please Correct the Following Errors :</b>
+            <ul>
+                <li v-for="error in errors">{{ error }}</li>
+            </ul>
+        </p>
+        <label for="">Title</label>
+        <input type="text" name="title" ref="title" id="title" v-model="title" >
+        {{ title }}
+        <br>
+        <label for="">Description</label>
+        <textarea name="description" ref="description" id="description" cols="30" rows="10" v-model="description"  ></textarea>
+        {{ description }}
+        <br>
+        <input type="submit" value="SUBMIT">
+    </form>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+ <script type="text/javascript">
+   var vm = new Vue({
+      el: '#app',
+      data: {
+        title: "",
+        description: "",
+        errors: []
+      },
+      methods:{
+        submitForm: function(event){
+            this.errors = []
+
+            if(this.title.length < 5){
+                this.errors.push('Minimal Title 5 Character');
+                this.$refs.title.focus()
+              
+            }if(this.description.length > 10){
+                this.errors.push('Maximal Title 10 Character');
+                this.$refs.description.focus()
+            }
+
+            if(this.errors.length === 0){
+                alert('Thanks for yout data input')
+            }
+        }
+      }
+     
+  }
+   );
+ </script>
+</body>
+</html>
