@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <style>
+        .max.title {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+    </style>
+    <title>Task 12 Ajax Axios</title>
+  </head>
+  <body>
+    <div class="container w-10" id="app">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" style="font-weight: bold;">Input Area</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">&nbsp;</h6>
+                        <form>
+                            <div class="form-group">
+                                <label for="title">Name</label>
+                                <input type="text" :disabled="buttonStatus == 'upload'" class="form-control" name="name" ref="name" id="name" v-model="name" >
+                            </div>
+                            <div class="form-group">
+                                <label for="title">Address</label>
+                               <textarea name="description" :disabled="buttonStatus == 'upload'" id="address" cols="30" rows="5" class="form-control" ref="address" v-model="address"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="title">Number Phone</label>
+                                <input type="text" :disabled="buttonStatus == 'upload'" class="form-control" name="telp" ref="telp" id="telp" v-model="telp" >
+                            </div>
+                            <div class="form-group" v-if="buttonStatus == 'upload'">
+                                <label for="photo_profile">Photo Profile</label>
+                                <input type="file" class="form-control" name="photo_profile" ref="photo_profile" id="photo_profile" >
+                            </div>
+                            <div class="alert alert-danger" role="alert" v-if="errors.length">
+                                <ul>
+                                    <li v-for="error in errors">{{ error }}</li>
+                                </ul>
+                            </div>
+                        </form>
+                        <div v-if="buttonStatus == 'submit'">
+                            <button @click.prevent="submitForm" class="btn btn-primary">Submit</button>
+                        </div>
+                        <div v-else-if="buttonStatus == 'update'">
+                            <button @click.prevent="updateForm" class="btn btn-warning">Update</button>
+                            <button @click.prevent="cancelForm" class="btn btn-danger">Cancel</button>
+                        </div>
+                        <div v-else-if="buttonStatus == 'upload'">
+                            <button @click.prevent="uploadPhotoForm(idUploadPhoto)" class="btn btn-secondary">Upload Foto</button>
+                            <button @click.prevent="cancelForm" class="btn btn-danger">Cancel</button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="row" >
+            <div class="col-md-4" v-for="member of members">
+                <div class="card">
+                    <img v-bind:src="member.photo_profile ? photoDomain + member.photo_profile : 'https://picsum.photos/50/50'" 
+                    class="card-img-top" alt="...">
+                    <div class="card-body">
+                      <h5 class="card-title max title" style="font-size: 12pt;">{{ member.name }}</h5>
+                      <p class="card-text">
+                        <dl style="font-size: 10pt;">
+                            <dt>Address</dt>
+                            <dd>{{ member.address }}</dd>
+                            <dt>Telphone</dt>
+                            <dd>{{ member.telp }}</dd>
+                        </dl>
+                      </p>
+                      <div class="btn-group" role="group"> 
+                        <button v-on:click="uploadPhotoMember(member)" class="btn btn-sm btn-secondary">Upload</button>
+                        <button v-on:click="editMember(member)" class="btn btn-sm btn-success">Edit</button>
+                        <button v-on:click="deleteMember(member.id)" class="btn btn-sm btn-danger">Delete</button>
+                        
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/javascript">
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            buttonStatus: "submit",
+            name: "",
+            address: "",
+            telp: "",
+            errors: [],
+            members: [],
+            photoDomain: "http://demo-api-vue.sanbercloud.com",
+            idUpdate: "",
+            idUploadPhoto: ""
+        },
+        methods:{
+            validationForm: function(){
+                this.errors = []
+
+                if(this.name.length < 5){
+                    this.errors.push('5 Characer Minimal');
+                    this.$refs.name.focus()
+                
+                }if(this.address.length > 100){
+                    this.errors.push('100 Character Maximal');
+                    this.$refs.address.focus()
+                }
+                if(this.telp.length > 15){
+                    this.errors.push('Number Phone Format is Wrong');
+                    this.$refs.telp.focus()
+                }
+            },
+            clearForm: function(){
+                this.name = ''
+                this.address = ''
+                this.telp = ''
+            },
+            submitForm: function(event){
+                
+                this.validationForm()
+
+                if(this.errors.length === 0){
+                    let formData = new FormData()
+                    formData.append('name', this.name)
+                    formData.append('address', this.address)
+                    formData.append('telp', this.telp)
+
+                    const config = {
+                        method : "post",
+                        url: "http://demo-api-vue.sanbercloud.com/api/member",
+                        data: formData
+                    }
+    
+                    axios(config)
+                        .then((response) => {
+                            console.log(response)
+                            alert('Terima Kasih Anda mengisi Data Members')
+                            this.clearForm()
+                            this.getMembers()
+                            
+                        })
+                        .catch((response) => {
+    
+                        })
+                }
+            },
+            getMembers: function(){
+                const config = {
+                    method : "get",
+                    url: "http://demo-api-vue.sanbercloud.com/api/member"
+                }
+
+                axios(config)
+                    .then((response) => {
+                        this.members =  response.data.members
+                        console.log(response.data.members)
+                    })
+                    .catch((response) => {
+
+                    })
+
+            },
+            deleteMember: function (id){
+                
+                const config = {
+                    method : "post",
+                    url: `http://demo-api-vue.sanbercloud.com/api/member/${id}`,
+                    params: { _method: "DELETE"}
+                }
+
+                axios(config)
+                    .then((response) => {
+                        //console.log(response)
+                        this.getMembers()
+                        alert('Menghapus Data Member')
+                        
+                        
+                    })
+                    .catch((response) => {
+
+                    })
+            },
+            editMember: function(member){
+               // console.log(member)
+                this.name = member.name
+                this.address = member.address
+                this.telp = member.telp
+                this.idUpdate = member.id
+                this.buttonStatus = "update"
+            },
+            cancelForm: function(){
+                this.clearForm()
+                this.buttonStatus = "submit"
+                this.idUpdate = ""
+            },
+            updateForm: function(){
+                //console.log(this.idUpdate)
+                this.validationForm()
+
+                if(this.errors.length === 0){
+                    let formData = new FormData()
+                    formData.append('name', this.name)
+                    formData.append('address', this.address)
+                    formData.append('telp', this.telp)
+
+                    const config = {
+                        method : "post",
+                        url: "http://demo-api-vue.sanbercloud.com/api/member/"+this.idUpdate,
+                        data: formData,
+                        params: { _method: "PUT"}
+                    }
+    
+                    axios(config)
+                        .then((response) => {
+                            console.log(response)
+                            alert('Berhasil Merubah Data')
+                            this.buttonStatus = "submit"
+                            this.idUpdate = ""
+                            this.clearForm()
+                            this.getMembers()
+                            
+                        })
+                        .catch((response) => {
+    
+                        })
+                }
+            },
+            uploadPhotoMember: function(member){
+                console.log(member)
+                this.name = member.name
+                this.address = member.address
+                this.telp = member.telp
+                this.idUploadPhoto = member.id
+                this.buttonStatus = "upload"
+            },
+            uploadPhotoForm: function(id){
+                console.log(this.idUploadPhoto)
+                let file = this.$refs.photo_profile.files[0]
+
+                let formData = new FormData()
+                formData.append('photo_profile', file)
+
+
+                const config = {
+                    method : "post",
+                    url: "http://demo-api-vue.sanbercloud.com/api/member/"+this.idUploadPhoto+"/upload-photo-profile",
+                    data: formData,
+                }
+
+                axios(config)
+                    .then((response) => {
+                        console.log(response)
+                        alert('Berhasil Upload Photo Profile')
+                        this.buttonStatus = "submit"
+                        this.idUploadPhoto = ""
+                        this.clearForm()
+                        this.getMembers()
+                        
+                    })
+                    .catch((response) => {
+
+                    })
+            }
+        },
+        created(){
+            this.getMembers()
+        }
+        
+    }
+    );
+    </script>
+    <style>
+      .w-10 {
+        width: 50%;
+        margin-top: 2rem;
+      }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
+  </body>
+</html>
